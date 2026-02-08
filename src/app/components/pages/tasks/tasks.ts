@@ -16,7 +16,7 @@ export class Tasks implements OnInit {
 
   constructor(private api: ApiService) {}
 
-  tasks: Task[] = [];
+  tasks = signal<Task[]>([]);
   loading = signal(false);
 
   ngOnInit() {
@@ -25,15 +25,15 @@ export class Tasks implements OnInit {
 
 
   loadTasks() {
-  this.api.getTasks().subscribe({
-    next: (data) => {
-      this.tasks = [...data];
-    },
-    error: (err) => {
-      console.error('Error loading tasks', err);
-    }
-  });
-}
+    this.api.getTasks().subscribe({
+      next: (data) => {
+        this.tasks.set([...data]);
+      },
+      error: (err) => {
+        console.error('Error loading tasks', err);
+      }
+    });
+  }
 
 
 
@@ -45,7 +45,7 @@ export class Tasks implements OnInit {
   pageSize = 5;
 
   get filteredTasks() {
-    let data = this.tasks.filter(task =>
+    let data = this.tasks().filter(task =>
       Object.values(task).some(val =>
         val?.toString().toLowerCase().includes(this.searchText.toLowerCase())
       )
@@ -102,10 +102,7 @@ saveEdit() {
   this.loading.set(true);
   this.api.updateTask(this.editingTask.id, this.editingTask).subscribe({
     next: (updated: Task) => {
-      const idx = this.tasks.findIndex(t => t.id === updated.id);
-      if (idx > -1) {
-        this.tasks[idx] = { ...updated };
-      }
+      this.tasks.update(list => list.map(t => t.id === updated.id ? { ...updated } : t));
       this.editingTask = null;
       this.loading.set(false);
     },
@@ -128,8 +125,7 @@ deleteTask(id: number) {
   this.loading.set(true);
   this.api.deleteTask(id).subscribe({
     next: () => {
-      const idx = this.tasks.findIndex(t => t.id === id);
-      if (idx > -1) this.tasks.splice(idx, 1);
+      this.tasks.update(list => list.filter(t => t.id !== id));
       this.page = 1;
       this.loading.set(false);
     },
@@ -187,7 +183,7 @@ deleteTask(id: number) {
   this.loading.set(true);
   this.api.createTask(this.newTask).subscribe({
     next: (created: Task) => {
-      this.tasks.unshift(created);
+      this.tasks.update(list => [created, ...list]);
       this.resetForm();
       this.showAddForm = false;
       this.page = 1;
