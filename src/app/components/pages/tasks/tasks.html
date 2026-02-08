@@ -13,42 +13,44 @@
   <div class="card mb-3" *ngIf="showAddForm">
     <div class="card-body">
       <h5 class="card-title">Create New Task</h5>
-      <div class="row">
-        <div class="col-md-4">
-          <label class="form-label">Task Name</label>
-          <input type="text" class="form-control" [(ngModel)]="newTask.name" placeholder="Enter task name" />
+      <form [formGroup]="addTaskForm">
+        <div class="row">
+          <div class="col-md-4">
+            <label class="form-label">Task Name</label>
+            <input type="text" class="form-control" formControlName="name" placeholder="Enter task name" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-control" formControlName="dueDate" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Priority</label>
+            <select class="form-select" formControlName="priority">
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="LOW">LOW</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" formControlName="status">
+              <option value="PENDING">PENDING</option>
+              <option value="COMPLETED">COMPLETED</option>
+            </select>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Due Date</label>
-          <input type="date" class="form-control" [(ngModel)]="newTask.dueDate" />
+        <div class="mt-3">
+          <button class="btn btn-primary me-2" type="button" (click)="addTask()" [disabled]="!addTaskForm.valid || loading()">
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="bi bi-check"></i> Add
+          </button>
+          <button class="btn btn-secondary" type="button" (click)="toggleAddForm()" [disabled]="loading()">
+            <i class="bi bi-x"></i> Cancel
+          </button>
         </div>
-        <div class="col-md-2">
-          <label class="form-label">Priority</label>
-          <select class="form-select" [(ngModel)]="newTask.priority">
-            <option value="HIGH">HIGH</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="LOW">LOW</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Status</label>
-          <select class="form-select" [(ngModel)]="newTask.status">
-            <option value="PENDING">PENDING</option>
-            <option value="COMPLETED">COMPLETED</option>
-          </select>
-        </div>
-      </div>
-      <div class="mt-3">
-        <button class="btn btn-primary me-2" type="button" (click)="addTask()" [disabled]="!newTask.name.trim() || loading()">
-          @if (loading()) {
-            <span class="spinner-border spinner-border-sm me-2"></span>
-          }
-          <i class="bi bi-check"></i> Add
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="toggleAddForm()" [disabled]="loading()">
-          <i class="bi bi-x"></i> Cancel
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -103,30 +105,36 @@
 
         <!-- Name -->
         <td class="text-truncate" style="max-width: 200px;">
-          <ng-container *ngIf="editingTask?.id !== task.id; else editName">
+          <ng-container *ngIf="editingTaskId !== task.id; else editName">
             <i class="bi bi-check2-square me-1"></i>
             {{ task.name }}
           </ng-container>
           <ng-template #editName>
-            <input class="form-control form-control-sm" [(ngModel)]="editingTask.name" />
-          </ng-template>
+  <div [formGroup]="editTaskForm">
+    <input class="form-control form-control-sm"
+           formControlName="name" />
+  </div>
+</ng-template>
         </td>
 
         <!-- Date -->
         <td>
-          <ng-container *ngIf="editingTask?.id !== task.id; else editDate">
+          <ng-container *ngIf="editingTaskId !== task.id; else editDate">
             <i class="bi bi-calendar-event me-1"></i>
             {{ task.dueDate | date:'dd MMM yyyy' }}
           </ng-container>
           <ng-template #editDate>
-            <input type="date" class="form-control form-control-sm"
-                   [(ngModel)]="editingTask.dueDate" />
+               <div [formGroup]="editTaskForm">
+                <input type="date"
+                      class="form-control form-control-sm"
+                      formControlName="dueDate" />
+              </div>
           </ng-template>
         </td>
 
         <!-- Priority -->
         <td class="text-center">
-          <ng-container *ngIf="editingTask?.id !== task.id; else editPriority">
+          <ng-container *ngIf="editingTaskId !== task.id; else editPriority">
             <span class="badge bg-danger" *ngIf="task.priority === 'HIGH'">
               <i class="bi bi-exclamation-triangle"></i> High
             </span>
@@ -141,18 +149,21 @@
           </ng-container>
 
           <ng-template #editPriority>
+          <div [formGroup]="editTaskForm">
             <select class="form-select form-select-sm"
-                    [(ngModel)]="editingTask.priority">
+                    formControlName="priority">
               <option value="HIGH">HIGH</option>
               <option value="MEDIUM">MEDIUM</option>
               <option value="LOW">LOW</option>
             </select>
-          </ng-template>
+          </div>
+        </ng-template>
+
         </td>
 
         <!-- Status -->
         <td class="text-center">
-          <ng-container *ngIf="editingTask?.id !== task.id; else editStatus">
+          <ng-container *ngIf="editingTaskId !== task.id; else editStatus">
             <span class="badge bg-warning text-dark" *ngIf="task.status === 'PENDING'">
               <i class="bi bi-hourglass-split"></i> Pending
             </span>
@@ -163,19 +174,22 @@
           </ng-container>
 
           <ng-template #editStatus>
+          <div [formGroup]="editTaskForm">
             <select class="form-select form-select-sm"
-                    [(ngModel)]="editingTask.status">
+                    formControlName="status">
               <option value="PENDING">PENDING</option>
               <option value="COMPLETED">COMPLETED</option>
             </select>
-          </ng-template>
+          </div>
+        </ng-template>
+
         </td>
 
         <!-- Actions -->
         <td>
           <div class="d-flex flex-wrap gap-1 justify-content-center">
 
-            <ng-container *ngIf="editingTask?.id !== task.id; else editActions">
+            <ng-container *ngIf="editingTaskId !== task.id; else editActions">
               <button class="btn btn-primary btn-sm"
                       type="button"
                       (click)="editTask(task)"
@@ -195,7 +209,7 @@
               <button class="btn btn-success btn-sm"
                       type="button"
                       (click)="saveEdit()"
-                      [disabled]="loading()">
+                      [disabled]="!editTaskForm.valid || loading()">
                 @if (loading()) {
                   <span class="spinner-border spinner-border-sm me-1"></span>
                 }

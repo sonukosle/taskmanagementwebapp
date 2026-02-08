@@ -1,26 +1,42 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, signal } from '@angular/core';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../service/api-service';
 import { Task } from '../../../model/task.model';
 import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-tasks',
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, DatePipe],
   templateUrl: './tasks.html',
   styleUrl: './tasks.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class Tasks implements OnInit {
 
-  constructor(private api: ApiService,private toastr: ToastrService) {}
+  constructor(private api: ApiService, private toastr: ToastrService, private fb: FormBuilder) {}
 
   tasks = signal<Task[]>([]);
   loading = signal(false);
 
+  // Form Groups
+  addTaskForm!: FormGroup;
+  editTaskForm!: FormGroup;
+  editingTask: any = null;
+  editingTaskId: number | null = null;
+
   ngOnInit() {
+    this.initializeForms();
     this.loadTasks();
+  }
+
+  initializeForms() {
+    const today = new Date().toISOString().split('T')[0];
+    this.addTaskForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(1)]],
+      dueDate: [today, Validators.required],
+      priority: ['MEDIUM', Validators.required],
+      status: ['PENDING', Validators.required]
+    });
   }
 
   loadTasks() {
@@ -86,28 +102,42 @@ export class Tasks implements OnInit {
     }
   }
 
-
-  editingTask: any = null;
-
   editTask(task: any) {
     this.editingTask = { ...task };
+    this.editingTaskId = task.id;
+    this.editTaskForm = this.fb.group({
+      name: [task.name, [Validators.required, Validators.minLength(1)]],
+      dueDate: [task.dueDate, Validators.required],
+      priority: [task.priority, Validators.required],
+      status: [task.status, Validators.required]
+    });
   }
 
 saveEdit() {
-  if (!this.editingTask || this.loading()) return;
+  if (!this.editTaskForm.valid || !this.editingTaskId || this.loading()) return;
 
   this.loading.set(true);
-  this.api.updateTask(this.editingTask.id, this.editingTask).subscribe({
-    next: (updated: Task) => {
-      this.tasks.update(list => list.map(t => t.id === updated.id ? { ...updated } : t));
+
+  const formData = {
+    id: this.editingTaskId,
+    name: this.editTaskForm.get('name')?.value,
+    dueDate: this.editTaskForm.get('dueDate')?.value,
+    priority: this.editTaskForm.get('priority')?.value,
+    status: this.editTaskForm.get('status')?.value
+  };
+
+  this.api.updateTask(this.editingTaskId, formData).subscribe({
+    next: () => {
       this.editingTask = null;
+      this.editingTaskId = null;
+      this.loadTasks();
       this.loading.set(false);
-       this.toastr.success('Task updated successfully!', 'Success');
+      this.toastr.success('Task updated successfully!', 'Success');
     },
     error: (err) => {
       console.error(err);
       this.loading.set(false);
-       this.toastr.error('Something went wrong!', 'Error');
+      this.toastr.error('Something went wrong!', 'Error');
     }
   });
 }
@@ -115,6 +145,7 @@ saveEdit() {
 
   cancelEdit() {
     this.editingTask = null;
+    this.editingTaskId = null;
   }
 
 deleteTask(id: number) {
@@ -139,51 +170,44 @@ deleteTask(id: number) {
 
   showAddForm = false;
 
-  newTask: Task = {
-    name: '',
-    dueDate: new Date().toISOString().split('T')[0],
-    priority: 'MEDIUM',
-    status: 'PENDING'
-  };
-
   toggleAddForm() {
     this.showAddForm = !this.showAddForm;
     if (!this.showAddForm) this.resetForm();
   }
 
   addTask() {
-  if (!this.newTask.name.trim()) {
-    alert('Please enter a task name');
-    return;
-  }
-  if (this.loading()) return;
-
-  this.loading.set(true);
-  this.api.createTask(this.newTask).subscribe({
-    next: (created: Task) => {
-      this.tasks.update(list => [created, ...list]);
-      this.resetForm();
-      this.showAddForm = false;
-      this.page = 1;
-      this.loading.set(false);
-        this.toastr.success('Task added successfully!', 'Success');
-    },
-    error: (err) => {
-      console.error(err);
-      this.loading.set(false);
-       this.toastr.error('Something went wrong!', 'Error');
+    if (!this.addTaskForm.valid) {
+      this.toastr.error('Please fill all required fields', 'Error');
+      return;
     }
-  });
-}
+    if (this.loading()) return;
 
+    this.loading.set(true);
+    this.api.createTask(this.addTaskForm.value).subscribe({
+      next: (created: Task) => {
+        this.tasks.update(list => [created, ...list]);
+        this.resetForm();
+        this.showAddForm = false;
+        this.page = 1;
+        this.loading.set(false);
+        this.toastr.success('Task added successfully!', 'Success');
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading.set(false);
+        this.toastr.error('Something went wrong!', 'Error');
+      }
+    });
+  }
 
   resetForm() {
-    this.newTask = {
+    const today = new Date().toISOString().split('T')[0];
+    this.addTaskForm.reset({
       name: '',
-      dueDate: new Date().toISOString().split('T')[0],
+      dueDate: today,
       priority: 'MEDIUM',
       status: 'PENDING'
-    };
+    });
   }
 
   trackById(index: number, item: Task) {
