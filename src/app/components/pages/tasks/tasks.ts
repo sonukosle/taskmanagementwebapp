@@ -3,7 +3,7 @@ import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../service/api-service';
 import { Task } from '../../../model/task.model';
-
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-tasks',
   imports: [CommonModule, FormsModule, DatePipe],
@@ -14,7 +14,7 @@ import { Task } from '../../../model/task.model';
 
 export class Tasks implements OnInit {
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService,private toastr: ToastrService) {}
 
   tasks = signal<Task[]>([]);
   loading = signal(false);
@@ -22,7 +22,6 @@ export class Tasks implements OnInit {
   ngOnInit() {
     this.loadTasks();
   }
-
 
   loadTasks() {
     this.api.getTasks().subscribe({
@@ -34,8 +33,6 @@ export class Tasks implements OnInit {
       }
     });
   }
-
-
 
   searchText = '';
   sortColumn = '';
@@ -105,10 +102,12 @@ saveEdit() {
       this.tasks.update(list => list.map(t => t.id === updated.id ? { ...updated } : t));
       this.editingTask = null;
       this.loading.set(false);
+       this.toastr.success('Task updated successfully!', 'Success');
     },
     error: (err) => {
       console.error(err);
       this.loading.set(false);
+       this.toastr.error('Something went wrong!', 'Error');
     }
   });
 }
@@ -128,17 +127,15 @@ deleteTask(id: number) {
       this.tasks.update(list => list.filter(t => t.id !== id));
       this.page = 1;
       this.loading.set(false);
+      this.toastr.success('Task deleted successfully!', 'Success');
     },
     error: (err) => {
       console.error(err);
       this.loading.set(false);
+       this.toastr.error('Something went wrong!', 'Error');
     }
   });
 }
-
-
-
-
 
   showAddForm = false;
 
@@ -153,25 +150,6 @@ deleteTask(id: number) {
     this.showAddForm = !this.showAddForm;
     if (!this.showAddForm) this.resetForm();
   }
-
-  // async addTask() {
-  //   if (!this.newTask.name.trim()) {
-  //     alert('Please enter a task name');
-  //     return;
-  //   }
-
-  //   this.api.createTask(this.newTask).subscribe({
-  //     next: (created: Task) => {
-  //       this.tasks.unshift(created);
-  //       this.resetForm();
-  //       this.showAddForm = false;
-  //       this.page = 1;
-  //     },
-  //     error: err => console.error(err)
-  //   });
-  //   await this.loadTasks();
-  // }
-
 
   addTask() {
   if (!this.newTask.name.trim()) {
@@ -188,10 +166,12 @@ deleteTask(id: number) {
       this.showAddForm = false;
       this.page = 1;
       this.loading.set(false);
+        this.toastr.success('Task added successfully!', 'Success');
     },
     error: (err) => {
       console.error(err);
       this.loading.set(false);
+       this.toastr.error('Something went wrong!', 'Error');
     }
   });
 }

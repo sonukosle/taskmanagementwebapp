@@ -64,131 +64,165 @@
   </div>
 
   <!-- Table -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-dark">
-        <tr>
-          <th (click)="changeSort('id')" style="cursor:pointer">
-            ID <i class="bi bi-arrow-down-up text-white"></i>
-          </th>
+   <div class="table-responsive">
+  <table class="table table-bordered table-hover table-sm align-middle text-nowrap">
 
-          <th (click)="changeSort('name')" style="cursor:pointer">
-            Task Name <i class="bi bi-arrow-down-up"></i>
-          </th>
+    <!-- Header -->
+    <thead class="table-dark text-center">
+      <tr>
+        <th (click)="changeSort('id')" style="cursor:pointer">
+          ID <i class="bi bi-arrow-down-up"></i>
+        </th>
 
-          <th (click)="changeSort('dueDate')" style="cursor:pointer">
-            Due Date <i class="bi bi-arrow-down-up"></i>
-          </th>
+        <th (click)="changeSort('name')" style="cursor:pointer">
+          Task Name <i class="bi bi-arrow-down-up"></i>
+        </th>
 
-          <th (click)="changeSort('priority')" style="cursor:pointer">
-            Priority <i class="bi bi-arrow-down-up"></i>
-          </th>
+        <th (click)="changeSort('dueDate')" style="cursor:pointer">
+          Due Date <i class="bi bi-arrow-down-up"></i>
+        </th>
 
-          <th (click)="changeSort('status')" style="cursor:pointer">
-            Status <i class="bi bi-arrow-down-up"></i>
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+        <th (click)="changeSort('priority')" style="cursor:pointer">
+          Priority <i class="bi bi-arrow-down-up"></i>
+        </th>
 
-      <tbody>
-        <!-- <tr *ngFor="let task of paginatedTasks"> -->
-          <tr *ngFor="let task of paginatedTasks; trackBy: trackById">
-          <td>{{ task.id }}</td>
+        <th (click)="changeSort('status')" style="cursor:pointer">
+          Status <i class="bi bi-arrow-down-up"></i>
+        </th>
 
-          <td>
-            <ng-container *ngIf="editingTask?.id !== task.id; else editName">
-              <i class="bi bi-check2-square me-1"></i>
-              {{ task.name }}
-            </ng-container>
-            <ng-template #editName>
-              <input class="form-control" [(ngModel)]="editingTask.name" />
-            </ng-template>
-          </td>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
 
-          <td>
-            <ng-container *ngIf="editingTask?.id !== task.id; else editDate">
-              <i class="bi bi-calendar-event me-1"></i>
-              {{ task.dueDate | date:'dd MMM yyyy' }}
-            </ng-container>
-            <ng-template #editDate>
-              <input type="date" class="form-control" [(ngModel)]="editingTask.dueDate" />
-            </ng-template>
-          </td>
+    <!-- Body -->
+    <tbody>
+      <tr *ngFor="let task of paginatedTasks; trackBy: trackById">
 
-          <!-- Priority Badge -->
-          <td>
-            <ng-container *ngIf="editingTask?.id !== task.id; else editPriority">
-              <span class="badge bg-danger" *ngIf="task.priority === 'HIGH'">
-                <i class="bi bi-exclamation-triangle"></i> High
-              </span>
+        <!-- ID -->
+        <td class="text-center">{{ task.id }}</td>
 
-              <span class="badge bg-warning text-dark" *ngIf="task.priority === 'MEDIUM'">
-                Medium
-              </span>
+        <!-- Name -->
+        <td class="text-truncate" style="max-width: 200px;">
+          <ng-container *ngIf="editingTask?.id !== task.id; else editName">
+            <i class="bi bi-check2-square me-1"></i>
+            {{ task.name }}
+          </ng-container>
+          <ng-template #editName>
+            <input class="form-control form-control-sm" [(ngModel)]="editingTask.name" />
+          </ng-template>
+        </td>
 
-              <span class="badge bg-secondary" *ngIf="task.priority === 'LOW'">
-                Low
-              </span>
-            </ng-container>
+        <!-- Date -->
+        <td>
+          <ng-container *ngIf="editingTask?.id !== task.id; else editDate">
+            <i class="bi bi-calendar-event me-1"></i>
+            {{ task.dueDate | date:'dd MMM yyyy' }}
+          </ng-container>
+          <ng-template #editDate>
+            <input type="date" class="form-control form-control-sm"
+                   [(ngModel)]="editingTask.dueDate" />
+          </ng-template>
+        </td>
 
-            <ng-template #editPriority>
-              <select class="form-select" [(ngModel)]="editingTask.priority">
-                <option value="HIGH">HIGH</option>
-                <option value="MEDIUM">MEDIUM</option>
-                <option value="LOW">LOW</option>
-              </select>
-            </ng-template>
-          </td>
+        <!-- Priority -->
+        <td class="text-center">
+          <ng-container *ngIf="editingTask?.id !== task.id; else editPriority">
+            <span class="badge bg-danger" *ngIf="task.priority === 'HIGH'">
+              <i class="bi bi-exclamation-triangle"></i> High
+            </span>
 
-          <!-- Status Badge -->
-          <td>
-            <ng-container *ngIf="editingTask?.id !== task.id; else editStatus">
-              <span class="badge bg-warning text-dark" *ngIf="task.status === 'PENDING'">
-                <i class="bi bi-hourglass-split"></i> Pending
-              </span>
+            <span class="badge bg-warning text-dark" *ngIf="task.priority === 'MEDIUM'">
+              Medium
+            </span>
 
-              <span class="badge bg-success" *ngIf="task.status === 'COMPLETED'">
-                <i class="bi bi-check-circle"></i> Completed
-              </span>
-            </ng-container>
+            <span class="badge bg-secondary" *ngIf="task.priority === 'LOW'">
+              Low
+            </span>
+          </ng-container>
 
-            <ng-template #editStatus>
-              <select class="form-select" [(ngModel)]="editingTask.status">
-                <option value="PENDING">PENDING</option>
-                <option value="COMPLETED">COMPLETED</option>
-              </select>
-            </ng-template>
-          </td>
+          <ng-template #editPriority>
+            <select class="form-select form-select-sm"
+                    [(ngModel)]="editingTask.priority">
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="LOW">LOW</option>
+            </select>
+          </ng-template>
+        </td>
 
-          <td>
+        <!-- Status -->
+        <td class="text-center">
+          <ng-container *ngIf="editingTask?.id !== task.id; else editStatus">
+            <span class="badge bg-warning text-dark" *ngIf="task.status === 'PENDING'">
+              <i class="bi bi-hourglass-split"></i> Pending
+            </span>
+
+            <span class="badge bg-success" *ngIf="task.status === 'COMPLETED'">
+              <i class="bi bi-check-circle"></i> Completed
+            </span>
+          </ng-container>
+
+          <ng-template #editStatus>
+            <select class="form-select form-select-sm"
+                    [(ngModel)]="editingTask.status">
+              <option value="PENDING">PENDING</option>
+              <option value="COMPLETED">COMPLETED</option>
+            </select>
+          </ng-template>
+        </td>
+
+        <!-- Actions -->
+        <td>
+          <div class="d-flex flex-wrap gap-1 justify-content-center">
+
             <ng-container *ngIf="editingTask?.id !== task.id; else editActions">
-              <button class="btn btn-sm btn-primary me-1" type="button" (click)="editTask(task)" [disabled]="loading()">
-                <i class="bi bi-pencil"></i> Edit
+              <button class="btn btn-primary btn-sm"
+                      type="button"
+                      (click)="editTask(task)"
+                      [disabled]="loading()">
+                <i class="bi bi-pencil"></i>
               </button>
-              <button class="btn btn-sm btn-danger" type="button" (click)="deleteTask(task.id!)" [disabled]="task.id === undefined || loading()">
-                <i class="bi bi-trash"></i> Delete
+
+              <button class="btn btn-danger btn-sm"
+                      type="button"
+                      (click)="deleteTask(task.id!)"
+                      [disabled]="task.id === undefined || loading()">
+                <i class="bi bi-trash"></i>
               </button>
             </ng-container>
 
             <ng-template #editActions>
-              <button class="btn btn-sm btn-success me-1" type="button" (click)="saveEdit()" [disabled]="loading()">
+              <button class="btn btn-success btn-sm"
+                      type="button"
+                      (click)="saveEdit()"
+                      [disabled]="loading()">
                 @if (loading()) {
                   <span class="spinner-border spinner-border-sm me-1"></span>
                 }
                 Save
               </button>
-              <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEdit()" [disabled]="loading()">Cancel</button>
-            </ng-template>
-          </td>
-        </tr>
 
-        <tr *ngIf="paginatedTasks.length === 0">
-          <td colspan="6" class="text-center">No data found</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+              <button class="btn btn-secondary btn-sm"
+                      type="button"
+                      (click)="cancelEdit()"
+                      [disabled]="loading()">
+                Cancel
+              </button>
+            </ng-template>
+
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="paginatedTasks.length === 0">
+        <td colspan="6" class="text-center">No data found</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <!-- Table -->
+
 
   <!-- Pagination -->
   <nav aria-label="Page navigation example" *ngIf="totalPages > 1">
