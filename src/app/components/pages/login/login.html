@@ -1,32 +1,32 @@
-<div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
-  <div class="card shadow-lg border-0" style="width: 400px;">
+<div class="login-container">
+  <div class="card shadow-lg border-0 login-card">
     <div class="card-body p-4">
 
       <!-- Title -->
       <h3 class="text-center mb-4">
-        <i class="bi bi-person-circle me-2"></i>
+        <!-- <i class="bi bi-person-circle me-2"></i> -->
         Login
       </h3>
 
       <!-- Error Message -->
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
+      @if (errorMessage()) {
+        <div class="alert alert-danger">
+          {{ errorMessage() }}
+        </div>
+      }
 
       <!-- Login Form -->
-      <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <form [formGroup]="form" (ngSubmit)="onLogin()">
 
-        <!-- Email -->
+        <!-- Username -->
         <div class="mb-3">
           <label class="form-label">
-            <i class="bi bi-envelope me-1"></i> Username
+            <i class="bi bi-person-check me-1"></i>Username
           </label>
           <input
-            type="email"
+            type="text"
             class="form-control"
-            name="username"
-            [(ngModel)]="loginData.username"
-            required
+            formControlName="username"
             placeholder="Enter username"
           />
         </div>
@@ -34,22 +34,20 @@
         <!-- Password -->
         <div class="mb-3">
           <label class="form-label">
-            <i class="bi bi-lock me-1"></i> Password
+            <i class="bi bi-lock me-1"></i>Password
           </label>
           <input
             type="password"
             class="form-control"
-            name="password"
-            [(ngModel)]="loginData.password"
-            required
+            formControlName="password"
             placeholder="Enter password"
           />
         </div>
 
         <!-- Remember -->
         <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" />
-          <label class="form-check-label">
+          <input class="form-check-input" type="checkbox" id="rememberMe" />
+          <label class="form-check-label" for="rememberMe">
             Remember me
           </label>
         </div>
@@ -58,9 +56,11 @@
         <button
           class="btn btn-primary w-100"
           type="submit"
-          [disabled]="loginForm.invalid || loading"
+          [disabled]="form.invalid || loading()"
         >
-          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
           Login
         </button>
 

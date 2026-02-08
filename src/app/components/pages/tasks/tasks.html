@@ -4,7 +4,7 @@
     <h3 class="mb-0">
       <i class="bi bi-list-task"></i> Task List
     </h3>
-    <button class="btn btn-success" type="button" (click)="toggleAddForm()">
+    <button class="btn btn-success" type="button" (click)="toggleAddForm()" [disabled]="loading()">
       <i class="bi bi-plus"></i> Add Task
     </button>
   </div>
@@ -39,10 +39,13 @@
         </div>
       </div>
       <div class="mt-3">
-        <button class="btn btn-primary me-2" type="button" (click)="addTask()">
+        <button class="btn btn-primary me-2" type="button" (click)="addTask()" [disabled]="!newTask.name.trim() || loading()">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
           <i class="bi bi-check"></i> Add
         </button>
-        <button class="btn btn-secondary" type="button" (click)="toggleAddForm()">
+        <button class="btn btn-secondary" type="button" (click)="toggleAddForm()" [disabled]="loading()">
           <i class="bi bi-x"></i> Cancel
         </button>
       </div>
@@ -89,7 +92,8 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let task of paginatedTasks">
+        <!-- <tr *ngFor="let task of paginatedTasks"> -->
+          <tr *ngFor="let task of paginatedTasks; trackBy: trackById">
           <td>{{ task.id }}</td>
 
           <td>
@@ -159,17 +163,22 @@
 
           <td>
             <ng-container *ngIf="editingTask?.id !== task.id; else editActions">
-              <button class="btn btn-sm btn-primary me-1" type="button" (click)="editTask(task)">
+              <button class="btn btn-sm btn-primary me-1" type="button" (click)="editTask(task)" [disabled]="loading()">
                 <i class="bi bi-pencil"></i> Edit
               </button>
-              <button class="btn btn-sm btn-danger" type="button" (click)="deleteTask(task.id!)" [disabled]="task.id === undefined">
+              <button class="btn btn-sm btn-danger" type="button" (click)="deleteTask(task.id!)" [disabled]="task.id === undefined || loading()">
                 <i class="bi bi-trash"></i> Delete
               </button>
             </ng-container>
 
             <ng-template #editActions>
-              <button class="btn btn-sm btn-success me-1" type="button" (click)="saveEdit()">Save</button>
-              <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEdit()">Cancel</button>
+              <button class="btn btn-sm btn-success me-1" type="button" (click)="saveEdit()" [disabled]="loading()">
+                @if (loading()) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Save
+              </button>
+              <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEdit()" [disabled]="loading()">Cancel</button>
             </ng-template>
           </td>
         </tr>

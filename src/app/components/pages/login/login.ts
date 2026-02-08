@@ -1,45 +1,47 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, signal, ChangeDetectionStrategy, inject } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../service/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
-loginData = {
-    username: '',
-    password: ''
-  };
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
-  loading = false;
-  errorMessage = '';
+  loading = signal(false);
+  errorMessage = signal('');
 
-  constructor(private router: Router) {}
+  form = this.fb.group({
+    username: ['', [Validators.required]],
+    password: ['', [Validators.required]],
+  });
 
   onLogin() {
-    if (!this.loginData.username || !this.loginData.password) return;
+    debugger
+    if (this.form.invalid) return;
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    // Temporary demo login
-    setTimeout(() => {
-      this.loading = false;
+    const { username, password } = this.form.value;
 
-      if (
-        this.loginData.username === 'sunny' &&
-        this.loginData.password === '1234'
-      ) {
-        // redirect after login
+    this.auth.login(username as string, password as string).subscribe({
+      next: () => {
+        this.loading.set(false);
         this.router.navigate(['/dashboard']);
-      } else {
-        this.errorMessage = 'Invalid email or password';
+      },
+      error: (err: unknown) => {
+        this.loading.set(false);
+        this.errorMessage.set(err instanceof Error ? err.message : 'Login failed');
       }
-    }, 1000);
+    });
   }
-
 }

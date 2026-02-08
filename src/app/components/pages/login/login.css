@@ -1,0 +1,29 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.login-card {
+  width: 90vw;
+  max-width: 400px;
+  height: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+:host {
+  display: contents;
+  margin: 0;
+  padding: 0;
+}
+
