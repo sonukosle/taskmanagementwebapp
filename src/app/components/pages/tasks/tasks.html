@@ -1,0 +1,216 @@
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">
+      <i class="bi bi-list-task"></i> Task List
+    </h3>
+    <button class="btn btn-success" type="button" (click)="toggleAddForm()">
+      <i class="bi bi-plus"></i> Add Task
+    </button>
+  </div>
+
+  <!-- Add New Task Form -->
+  <div class="card mb-3" *ngIf="showAddForm">
+    <div class="card-body">
+      <h5 class="card-title">Create New Task</h5>
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">Task Name</label>
+          <input type="text" class="form-control" [(ngModel)]="newTask.name" placeholder="Enter task name" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Due Date</label>
+          <input type="date" class="form-control" [(ngModel)]="newTask.dueDate" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Priority</label>
+          <select class="form-select" [(ngModel)]="newTask.priority">
+            <option value="HIGH">HIGH</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="LOW">LOW</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="newTask.status">
+            <option value="PENDING">PENDING</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button class="btn btn-primary me-2" type="button" (click)="addTask()">
+          <i class="bi bi-check"></i> Add
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="toggleAddForm()">
+          <i class="bi bi-x"></i> Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="mb-3 w-25">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Search task..."
+      [(ngModel)]="searchText"
+      (ngModelChange)="page = 1"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th (click)="changeSort('id')" style="cursor:pointer">
+            ID <i class="bi bi-arrow-down-up text-white"></i>
+          </th>
+
+          <th (click)="changeSort('name')" style="cursor:pointer">
+            Task Name <i class="bi bi-arrow-down-up"></i>
+          </th>
+
+          <th (click)="changeSort('dueDate')" style="cursor:pointer">
+            Due Date <i class="bi bi-arrow-down-up"></i>
+          </th>
+
+          <th (click)="changeSort('priority')" style="cursor:pointer">
+            Priority <i class="bi bi-arrow-down-up"></i>
+          </th>
+
+          <th (click)="changeSort('status')" style="cursor:pointer">
+            Status <i class="bi bi-arrow-down-up"></i>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let task of paginatedTasks">
+          <td>{{ task.id }}</td>
+
+          <td>
+            <ng-container *ngIf="editingTask?.id !== task.id; else editName">
+              <i class="bi bi-check2-square me-1"></i>
+              {{ task.name }}
+            </ng-container>
+            <ng-template #editName>
+              <input class="form-control" [(ngModel)]="editingTask.name" />
+            </ng-template>
+          </td>
+
+          <td>
+            <ng-container *ngIf="editingTask?.id !== task.id; else editDate">
+              <i class="bi bi-calendar-event me-1"></i>
+              {{ task.dueDate | date:'dd MMM yyyy' }}
+            </ng-container>
+            <ng-template #editDate>
+              <input type="date" class="form-control" [(ngModel)]="editingTask.dueDate" />
+            </ng-template>
+          </td>
+
+          <!-- Priority Badge -->
+          <td>
+            <ng-container *ngIf="editingTask?.id !== task.id; else editPriority">
+              <span class="badge bg-danger" *ngIf="task.priority === 'HIGH'">
+                <i class="bi bi-exclamation-triangle"></i> High
+              </span>
+
+              <span class="badge bg-warning text-dark" *ngIf="task.priority === 'MEDIUM'">
+                Medium
+              </span>
+
+              <span class="badge bg-secondary" *ngIf="task.priority === 'LOW'">
+                Low
+              </span>
+            </ng-container>
+
+            <ng-template #editPriority>
+              <select class="form-select" [(ngModel)]="editingTask.priority">
+                <option value="HIGH">HIGH</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="LOW">LOW</option>
+              </select>
+            </ng-template>
+          </td>
+
+          <!-- Status Badge -->
+          <td>
+            <ng-container *ngIf="editingTask?.id !== task.id; else editStatus">
+              <span class="badge bg-warning text-dark" *ngIf="task.status === 'PENDING'">
+                <i class="bi bi-hourglass-split"></i> Pending
+              </span>
+
+              <span class="badge bg-success" *ngIf="task.status === 'COMPLETED'">
+                <i class="bi bi-check-circle"></i> Completed
+              </span>
+            </ng-container>
+
+            <ng-template #editStatus>
+              <select class="form-select" [(ngModel)]="editingTask.status">
+                <option value="PENDING">PENDING</option>
+                <option value="COMPLETED">COMPLETED</option>
+              </select>
+            </ng-template>
+          </td>
+
+          <td>
+            <ng-container *ngIf="editingTask?.id !== task.id; else editActions">
+              <button class="btn btn-sm btn-primary me-1" type="button" (click)="editTask(task)">
+                <i class="bi bi-pencil"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-danger" type="button" (click)="deleteTask(task.id!)" [disabled]="task.id === undefined">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </ng-container>
+
+            <ng-template #editActions>
+              <button class="btn btn-sm btn-success me-1" type="button" (click)="saveEdit()">Save</button>
+              <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEdit()">Cancel</button>
+            </ng-template>
+          </td>
+        </tr>
+
+        <tr *ngIf="paginatedTasks.length === 0">
+          <td colspan="6" class="text-center">No data found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation example" *ngIf="totalPages > 1">
+    <ul class="pagination justify-content-end">
+      <li class="page-item" [class.disabled]="page === 1">
+        <a
+          class="page-link"
+          href="#"
+          aria-label="Previous"
+          (click)="changePage(page-1); $event.preventDefault()"
+        >
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+
+      <li class="page-item" *ngFor="let p of [].constructor(totalPages); let i = index" [class.active]="page === i+1">
+        <a class="page-link" href="#" (click)="changePage(i+1); $event.preventDefault()">{{ i+1 }}</a>
+      </li>
+
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <a
+          class="page-link"
+          href="#"
+          aria-label="Next"
+          (click)="changePage(page+1); $event.preventDefault()"
+        >
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+</div>
+

@@ -1,0 +1,76 @@
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-lg border-0" style="width: 400px;">
+    <div class="card-body p-4">
+
+      <!-- Title -->
+      <h3 class="text-center mb-4">
+        <i class="bi bi-person-circle me-2"></i>
+        Login
+      </h3>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Login Form -->
+      <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-envelope me-1"></i> Username
+          </label>
+          <input
+            type="email"
+            class="form-control"
+            name="username"
+            [(ngModel)]="loginData.username"
+            required
+            placeholder="Enter username"
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-lock me-1"></i> Password
+          </label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            [(ngModel)]="loginData.password"
+            required
+            placeholder="Enter password"
+          />
+        </div>
+
+        <!-- Remember -->
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" />
+          <label class="form-check-label">
+            Remember me
+          </label>
+        </div>
+
+        <!-- Button -->
+        <button
+          class="btn btn-primary w-100"
+          type="submit"
+          [disabled]="loginForm.invalid || loading"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          Login
+        </button>
+
+      </form>
+
+      <!-- Footer -->
+      <div class="text-center mt-3">
+        <small class="text-muted">Task Management System</small>
+      </div>
+
+    </div>
+  </div>
+</div>
